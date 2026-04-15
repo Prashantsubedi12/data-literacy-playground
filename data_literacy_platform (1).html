@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>データリテラシー Playground ✨ Week 1 & 2</title>
+<style>
+  :root{
+    --bg1:#0f172a; --bg2:#1e293b; --card:#ffffff; --ink:#0f172a;
+    --accent:#6366f1; --accent2:#ec4899; --good:#10b981; --bad:#ef4444;
+    --warn:#f59e0b; --soft:#f1f5f9; --muted:#64748b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:linear-gradient(135deg,#0f172a 0%,#312e81 50%,#831843 100%);color:var(--ink);min-height:100vh}
+  .app{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+  header{background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-radius:24px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);margin-bottom:20px}
+  .title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  h1{margin:0;font-size:28px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900}
+  .lang-switch{margin-left:auto;display:flex;gap:6px;background:var(--soft);border-radius:999px;padding:4px}
+  .lang-switch button{background:transparent;border:0;padding:8px 14px;border-radius:999px;cursor:pointer;font-weight:700;color:var(--muted);font-size:13px}
+  .lang-switch button.on{background:var(--ink);color:#fff}
+  .sub{color:var(--muted);margin-top:8px;font-size:14px}
+  .progress{margin-top:14px;height:10px;background:var(--soft);border-radius:999px;overflow:hidden}
+  .progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .5s}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#78350f;padding:6px 12px;border-radius:999px;font-weight:800;font-size:13px;margin-left:8px}
+
+  nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  nav.tabs button{flex:1;min-width:140px;background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25);padding:12px 14px;border-radius:14px;cursor:pointer;font-weight:700;transition:all .2s;font-size:14px}
+  nav.tabs button:hover{transform:translateY(-2px);background:rgba(255,255,255,0.25)}
+  nav.tabs button.on{background:#fff;color:var(--ink);border-color:#fff}
+
+  .card{background:var(--card);border-radius:20px;padding:24px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,0.15)}
+  .card h2{margin:0 0 12px;font-size:22px;display:flex;align-items:center;gap:10px}
+  .card h3{margin:16px 0 8px;font-size:16px;color:var(--accent)}
+  .card p{line-height:1.7;margin:8px 0;color:#334155}
+  .tag{display:inline-block;background:var(--soft);color:var(--muted);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-right:6px}
+  .kid{background:linear-gradient(135deg,#fef3c7,#fde68a);border-left:4px solid var(--warn);padding:14px;border-radius:10px;margin:10px 0;font-size:15px}
+  .kid::before{content:"🧒 ";font-size:18px}
+  .tech{background:linear-gradient(135deg,#dbeafe,#bfdbfe);border-left:4px solid var(--accent);padding:14px;border-radius:10px;margin:10px 0;font-size:14px}
+  .tech::before{content:"🎓 ";font-size:18px}
+  .tip{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-left:4px solid var(--good);padding:12px;border-radius:10px;margin:10px 0;font-size:14px}
+  .warn{background:linear-gradient(135deg,#fee2e2,#fecaca);border-left:4px solid var(--bad);padding:12px;border-radius:10px;margin:10px 0;font-size:14px}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:12px 0}
+  .mini{background:var(--soft);border-radius:14px;padding:14px}
+  .mini strong{color:var(--accent);display:block;margin-bottom:4px}
+
+  /* Quiz */
+  .q{background:var(--soft);border-radius:16px;padding:18px;margin:12px 0}
+  .q .qtext{font-weight:800;font-size:16px;margin-bottom:10px}
+  .opt{display:block;background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin:6px 0;cursor:pointer;transition:all .15s;font-size:15px}
+  .opt:hover{border-color:var(--accent);transform:translateX(4px)}
+  .opt.correct{background:#d1fae5;border-color:var(--good)}
+  .opt.wrong{background:#fee2e2;border-color:var(--bad)}
+  .opt.disabled{pointer-events:none;opacity:.75}
+  .explain{margin-top:10px;padding:12px;background:#fff;border-radius:10px;font-size:14px;border-left:4px solid var(--accent);display:none}
+  .explain.show{display:block}
+
+  /* Interactive simulator */
+  .sim{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:16px;padding:18px;margin:12px 0}
+  .sim h4{margin:0 0 10px;color:var(--accent)}
+  button.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:0;padding:10px 18px;border-radius:10px;font-weight:800;cursor:pointer;font-size:14px}
+  button.btn:hover{opacity:.9}
+  button.btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th,td{padding:8px;border:1px solid #e2e8f0;text-align:center}
+  th{background:var(--soft);font-weight:800}
+
+  .hist{display:flex;align-items:flex-end;gap:4px;height:180px;padding:10px;background:#fff;border-radius:10px;margin:10px 0}
+  .bar{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:6px 6px 0 0;position:relative;transition:all .3s;min-height:4px}
+  .bar span{position:absolute;top:-20px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--ink)}
+  .bar small{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:10px;color:var(--muted)}
+
+  .flash{padding:12px;border-radius:10px;font-weight:700;margin:8px 0;text-align:center;display:none}
+  .flash.show{display:block}
+  .flash.ok{background:var(--good);color:#fff}
+  .flash.no{background:var(--bad);color:#fff}
+
+  details{background:var(--soft);border-radius:10px;padding:10px 14px;margin:8px 0}
+  summary{cursor:pointer;font-weight:700;color:var(--accent)}
+
+  .dots{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:#fff;border-radius:10px;max-width:100%;margin:10px 0}
+  .dot{width:14px;height:14px;border-radius:50%;background:#cbd5e1;transition:all .3s}
+  .dot.picked{background:var(--accent2);transform:scale(1.3);box-shadow:0 0 6px var(--accent2)}
+  .dot.biased{background:var(--warn)}
+
+  .mono{font-family:"SF Mono",Menaco,Consolas,monospace;background:#0f172a;color:#a5f3fc;padding:10px;border-radius:8px;font-size:13px;overflow-x:auto}
+
+  .celebrate{position:fixed;top:20px;right:20px;background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#78350f;padding:16px 22px;border-radius:14px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,0.3);transform:translateX(400px);transition:transform .4s;z-index:1000}
+  .celebrate.show{transform:translateX(0)}
+
+  @media(max-width:640px){
+    h1{font-size:22px}
+    .card{padding:18px}
+    nav.tabs button{min-width:110px;font-size:13px;padding:10px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title">
+      <span style="font-size:34px">📊</span>
+      <h1 data-en="Data Literacy Playground" data-ja="データリテラシー Playground">データリテラシー Playground</h1>
+      <span class="xp">⭐ <span id="xp">0</span> XP</span>
+      <div class="lang-switch">
+        <button id="btnJa" class="on">日本語</button>
+        <button id="btnEn">English</button>
+      </div>
+    </div>
+    <p class="sub" data-en="Week 1 & Week 2 — learn like you're 10, level up like a data scientist 🚀" data-ja="第1週＆第2週 — 10歳でもわかる！でも中身はガチ 🚀">第1週＆第2週 — 10歳でもわかる！でも中身はガチ 🚀</p>
+    <div class="progress"><div id="prog"></div></div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="home" class="on" data-en="🏠 Home" data-ja="🏠 ホーム">🏠 ホーム</button>
+    <button data-tab="w1" data-en="📘 Week 1: Causes & Groups" data-ja="📘 第1週：因果と集団">📘 第1週：因果と集団</button>
+    <button data-tab="w2" data-en="📗 Week 2: Data Shape" data-ja="📗 第2週：データの形">📗 第2週：データの形</button>
+    <button data-tab="lab" data-en="🧪 Lab (Try it!)" data-ja="🧪 ラボ（体験）">🧪 ラボ（体験）</button>
+    <button data-tab="quiz" data-en="🎯 Boss Quiz" data-ja="🎯 ボスクイズ">🎯 ボスクイズ</button>
+    <button data-tab="cheat" data-en="📝 Cheat Sheet" data-ja="📝 チートシート">📝 チートシート</button>
+  </nav>
+
+  <!-- ========== HOME ========== -->
+  <section id="home" class="tab-pane">
+    <div class="card">
+      <h2>👋 <span data-en="Welcome!" data-ja="ようこそ！">ようこそ！</span></h2>
+      <p data-en="Data literacy means: looking at a pile of numbers and understanding the story they tell. In two weeks we'll go from 'What's data?' to 'I can build a histogram and find the median.'" data-ja="データリテラシーとは「数字の山」を見て、その数字が話す物語を理解する力です。2週間で『データって何？』から『ヒストグラムを作って中央値を出せる』まで一気にレベルアップします！">データリテラシーとは「数字の山」を見て、その数字が話す物語を理解する力です。2週間で『データって何？』から『ヒストグラムを作って中央値を出せる』まで一気にレベルアップします！</p>
+
+      <div class="grid2">
+        <div class="mini"><strong>📘 Week 1</strong><span data-en="Why we study groups, not individuals. Randomization. Cause vs effect." data-ja="なぜ個人じゃなく集団を調べる？ランダム化。原因と結果。">なぜ個人じゃなく集団を調べる？ランダム化。原因と結果。</span></div>
+        <div class="mini"><strong>📗 Week 2</strong><span data-en="Describing data: frequency tables, histograms, quartiles, median, percentiles." data-ja="データの説明：度数分布表、ヒストグラム、四分位、中央値、パーセンタイル。">データの説明：度数分布表、ヒストグラム、四分位、中央値、パーセンタイル。</span></div>
+        <div class="mini"><strong>🧪 <span data-en="Lab" data-ja="ラボ">ラボ</span></strong><span data-en="Run random sampling, build a live histogram, compute quartiles yourself." data-ja="ランダム抽出を実行、ヒストグラムを作る、四分位を自分で計算。">ランダム抽出を実行、ヒストグラムを作る、四分位を自分で計算。</span></div>
+        <div class="mini"><strong>🎯 <span data-en="Quiz" data-ja="クイズ">クイズ</span></strong><span data-en="10 mixed questions. Pass 8/10 to earn the ⭐ Data Explorer badge." data-ja="10問ミックス。8問以上で⭐データ探検家バッジゲット！">10問ミックス。8問以上で⭐データ探検家バッジゲット！</span></div>
+      </div>
+
+      <div class="tip" data-en="💡 Tip: Switch languages anytime with the buttons at the top. XP is saved while this tab is open." data-ja="💡 ヒント：右上のボタンでいつでも言語切替可能。XPはタブを開いている間ずっと保存されます。">💡 ヒント：右上のボタンでいつでも言語切替可能。XPはタブを開いている間ずっと保存されます。</div>
+    </div>
+
+    <div class="card">
+      <h2>🗺️ <span data-en="Your Journey" data-ja="学習ロードマップ">学習ロードマップ</span></h2>
+      <ol style="line-height:2">
+        <li data-en="Read Week 1 — get the 'why'" data-ja="第1週を読む — 「なぜ」を理解">第1週を読む — 「なぜ」を理解</li>
+        <li data-en="Try Week 1 practice + quiz" data-ja="第1週の練習＋クイズ">第1週の練習＋クイズ</li>
+        <li data-en="Read Week 2 — get the 'how'" data-ja="第2週を読む — 「どうやって」を理解">第2週を読む — 「どうやって」を理解</li>
+        <li data-en="Play in the Lab — build things" data-ja="ラボで遊ぶ — 作ってみる">ラボで遊ぶ — 作ってみる</li>
+        <li data-en="Beat the Boss Quiz" data-ja="ボスクイズを攻略">ボスクイズを攻略</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== WEEK 1 ========== -->
+  <section id="w1" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2>📘 <span data-en="Week 1 — Cause, Groups, and Randomness" data-ja="第1週 — 因果・集団・ランダム">第1週 — 因果・集団・ランダム</span></h2>
+      <span class="tag">統計</span><span class="tag">因果</span><span class="tag">ランダムサンプリング</span>
+
+      <h3>1. <span data-en="What is Data Analysis really doing?" data-ja="データ分析って何をしているの？">データ分析って何をしているの？</span></h3>
+      <div class="kid" data-en="Imagine you eat candy and get a tummy ache. Was it the candy? Or did you just run around too much? Data analysis is the detective work that figures out WHICH thing caused WHAT. The tricky part: real life is noisy. We need math to cut through the noise." data-ja="お菓子を食べたらお腹が痛くなった。原因はお菓子？それとも走りすぎた？データ分析はこの「どれが原因？」を解く探偵の仕事です。でも現実はノイズだらけ。だから数学で雑音をそぎ落とすのです。">お菓子を食べたらお腹が痛くなった。原因はお菓子？それとも走りすぎた？データ分析はこの「どれが原因？」を解く探偵の仕事です。でも現実はノイズだらけ。だから数学で雑音をそぎ落とすのです。</div>
+      <div class="tech" data-en="Formal definition: Data analysis quantifies the effect of a factor on an outcome of interest, while controlling for experimental and observational error. Without statistical methods, noise masks true effects." data-ja="正式な定義：データ分析とは、目的とする評価指標に対して影響を与える要因の効果を、実験誤差・観察誤差を取り除いたうえで定量的に測ることです。統計的手法なしでは、ノイズが真の効果を覆い隠してしまいます。">正式な定義：データ分析とは、目的とする評価指標に対して影響を与える要因の効果を、実験誤差・観察誤差を取り除いたうえで定量的に測ることです。統計的手法なしでは、ノイズが真の効果を覆い隠してしまいます。</div>
+
+      <h3>2. <span data-en="Cause (因果) vs Statistics (統計)" data-ja="因果 vs 統計">因果 vs 統計</span></h3>
+      <div class="grid2">
+        <div class="mini"><strong data-en="Cause (因果)" data-ja="因果">因果</strong><span data-en="Direct cause (因) + conditions (縁) → result (果). 'Because X happened, Y happened.'" data-ja="直接の原因（因）＋条件（縁）→結果（果）。『Xが起きたからYが起きた』。">直接の原因（因）＋条件（縁）→結果（果）。『Xが起きたからYが起きた』。</span></div>
+        <div class="mini"><strong data-en="Statistics (統計)" data-ja="統計">統計</strong><span data-en="Looking at a group and describing its overall shape/tendency with numbers." data-ja="集団全体を見て、その傾向を数値でまとめること。">集団全体を見て、その傾向を数値でまとめること。</span></div>
+      </div>
+
+      <h3>3. <span data-en="Why study a GROUP if individuals are so different?" data-ja="個人バラバラなのに、なぜ集団を調べる？">個人バラバラなのに、なぜ集団を調べる？</span></h3>
+      <div class="kid" data-en="If only ONE kid eats spinach and grows tall, maybe they were lucky. But if 1,000 kids eat spinach and most grow tall — now we're onto something! Big groups average out the luck." data-ja="1人の子がほうれん草を食べて背が伸びた → たまたまかも。でも1,000人が食べて多くが伸びた → ホンモノの効果っぽい！集団にすると『運』が平均化されるのです。">1人の子がほうれん草を食べて背が伸びた → たまたまかも。でも1,000人が食べて多くが伸びた → ホンモノの効果っぽい！集団にすると『運』が平均化されるのです。</div>
+      <div class="tech" data-en="Key insight: Scientific cause-and-effect requires group-level evidence. A single patient can't be both 'treated' and 'untreated' at the same time — but two randomized groups can stand in for that impossible comparison." data-ja="ポイント：科学的な因果の裏付けには集団レベルの証拠が必須です。1人の患者を同時に『治療あり』『治療なし』両方にはできません。しかしランダムに分けた2集団なら、その不可能な比較の代わりになります。">ポイント：科学的な因果の裏付けには集団レベルの証拠が必須です。1人の患者を同時に『治療あり』『治療なし』両方にはできません。しかしランダムに分けた2集団なら、その不可能な比較の代わりになります。</div>
+
+      <h3>4. <span data-en="The Shaman Problem 🔮" data-ja="祈祷師の話 🔮">祈祷師の話 🔮</span></h3>
+      <p data-en="A sick person visits a shaman. The shaman chants. One week later — they're better! Did the chant work?" data-ja="病気の人が祈祷師を訪ねた。祈祷師が祈った。1週間後 — 治った！祈りが効いた？">病気の人が祈祷師を訪ねた。祈祷師が祈った。1週間後 — 治った！祈りが効いた？</p>
+      <table>
+        <tr><th data-en="Treatment" data-ja="治療">治療</th><th data-en="Outcome" data-ja="結果">結果</th><th data-en="Worked?" data-ja="効いた？">効いた？</th></tr>
+        <tr><td data-en="Yes" data-ja="あり">あり</td><td data-en="Improved" data-ja="改善">改善</td><td>✅ <span data-en="maybe" data-ja="たぶん">たぶん</span></td></tr>
+        <tr><td data-en="Yes" data-ja="あり">あり</td><td data-en="No change" data-ja="変化なし">変化なし</td><td>❌</td></tr>
+        <tr><td data-en="No" data-ja="なし">なし</td><td data-en="Improved" data-ja="改善">改善</td><td>❌ <span data-en="(no treatment needed)" data-ja="（治療不要）">（治療不要）</span></td></tr>
+        <tr><td data-en="No" data-ja="なし">なし</td><td data-en="No change" data-ja="変化なし">変化なし</td><td>✅ <span data-en="was working" data-ja="効いていた">効いていた</span></td></tr>
+      </table>
+      <div class="warn" data-en="⚠️ Problem: We can't observe the SAME person both treated AND not treated at the same time. That's the fundamental problem of causal inference." data-ja="⚠️ 問題：同じ人の『治療あり』『治療なし』を同時に観察できません。これが因果推論の根本的な難しさです。">⚠️ 問題：同じ人の『治療あり』『治療なし』を同時に観察できません。これが因果推論の根本的な難しさです。</div>
+
+      <h3>5. <span data-en="Population & Sample (母集団と標本)" data-ja="母集団と標本">母集団と標本</span></h3>
+      <div class="grid2">
+        <div class="mini"><strong data-en="Population (母集団)" data-ja="母集団">母集団</strong><span data-en="ALL the people/things you care about. e.g., 'all diabetes patients in Japan'." data-ja="調べたい全員・全部。例：『日本の糖尿病患者全員』。">調べたい全員・全部。例：『日本の糖尿病患者全員』。</span></div>
+        <div class="mini"><strong data-en="Sample (標本)" data-ja="標本">標本</strong><span data-en="A SMALLER chunk you actually measure. Used to guess the whole population." data-ja="実際に測定する小さな一部。ここから母集団を推測します。">実際に測定する小さな一部。ここから母集団を推測します。</span></div>
+        <div class="mini"><strong data-en="Full census (全数調査)" data-ja="全数調査">全数調査</strong><span data-en="Measure everyone. Example: 国勢調査 (national census)." data-ja="全員を調べる。例：国勢調査。">全員を調べる。例：国勢調査。</span></div>
+        <div class="mini"><strong data-en="Sample survey (標本調査)" data-ja="標本調査">標本調査</strong><span data-en="Measure a subset to estimate the whole. Cheaper & faster." data-ja="一部を調べて全体を推測。安くて速い。">一部を調べて全体を推測。安くて速い。</span></div>
+      </div>
+
+      <h3>6. <span data-en="Random Sampling (ランダムサンプリング)" data-ja="ランダムサンプリング">ランダムサンプリング</span></h3>
+      <div class="kid" data-en="Imagine a bag of 1,000 different-colored candies. You close your eyes and grab 50. That's random sampling! Your handful probably has roughly the same color mix as the whole bag. If instead you picked only the red ones from the top — BIAS!" data-ja="1,000個のカラフルなあめ玉が入った袋。目を閉じて50個つかむ → ランダムサンプリング！手の中のあめ玉は袋全体とだいたい同じ色の比率になります。逆に上の赤いのだけ取ったら… 偏り（バイアス）！">1,000個のカラフルなあめ玉が入った袋。目を閉じて50個つかむ → ランダムサンプリング！手の中のあめ玉は袋全体とだいたい同じ色の比率になります。逆に上の赤いのだけ取ったら… 偏り（バイアス）！</div>
+      <div class="tech" data-en="Why random? Any non-random rule (e.g., 'first 10 patients each morning') correlates with hidden factors (age, occupation, availability). Random is the only rule guaranteed to be unrelated to any factor. Try the 'Bag of Candy' simulator in the Lab tab!" data-ja="なぜランダム？他のルール（例『朝来た最初の10人』）は必ず隠れた要因（年齢・職業・時間の都合）と関係します。ランダムだけが『どの要因とも関係しない』ことを保証できるルールです。ラボタブの『あめ玉シミュレーター』で体験してみよう！">なぜランダム？他のルール（例『朝来た最初の10人』）は必ず隠れた要因（年齢・職業・時間の都合）と関係します。ランダムだけが『どの要因とも関係しない』ことを保証できるルールです。ラボタブの『あめ玉シミュレーター』で体験してみよう！</div>
+
+      <h3>7. <span data-en="RCT — Randomized Controlled Trial (ランダム化比較研究)" data-ja="ランダム化比較研究（RCT）">ランダム化比較研究（RCT）</span></h3>
+      <ol style="line-height:1.9">
+        <li data-en="Gather study participants." data-ja="対象者を集める。">対象者を集める。</li>
+        <li data-en="RANDOMLY split into groups (treatment vs control)." data-ja="ランダムにグループ分け（治療群 vs 対照群）。">ランダムにグループ分け（治療群 vs 対照群）。</li>
+        <li data-en="Each group gets a different intervention." data-ja="各グループに異なる介入を実施。">各グループに異なる介入を実施。</li>
+        <li data-en="Measure outcomes." data-ja="結果を測定。">結果を測定。</li>
+        <li data-en="Compare → is there a real difference?" data-ja="比較 → 本当に差がある？">比較 → 本当に差がある？</li>
+      </ol>
+      <div class="tip" data-en="🏆 RCTs are the gold standard of causal evidence. Modern medicine is built on them." data-ja="🏆 RCTは因果証拠のゴールドスタンダード。現代医療はこの土台の上にあります。">🏆 RCTは因果証拠のゴールドスタンダード。現代医療はこの土台の上にあります。</div>
+
+      <details>
+        <summary>☕ <span data-en="Column: Fisher's 3 Principles" data-ja="コラム：フィッシャーの3原則">コラム：フィッシャーの3原則</span></summary>
+        <ul>
+          <li><strong data-en="Replication (反復)" data-ja="反復">反復</strong> — <span data-en="repeat experiments to measure variability" data-ja="ばらつきを測るため繰り返す">ばらつきを測るため繰り返す</span></li>
+          <li><strong data-en="Randomization (無作為化)" data-ja="無作為化">無作為化</strong> — <span data-en="assign conditions randomly" data-ja="条件をランダムに割り当てる">条件をランダムに割り当てる</span></li>
+          <li><strong data-en="Local control (局所管理)" data-ja="局所管理">局所管理</strong> — <span data-en="control known nuisance factors with blocking" data-ja="既知の攪乱因子をブロック化で抑える">既知の攪乱因子をブロック化で抑える</span></li>
+        </ul>
+      </details>
+    </div>
+
+    <!-- Practice Week 1 -->
+    <div class="card">
+      <h2>✏️ <span data-en="Practice — Week 1" data-ja="練習 — 第1週">練習 — 第1週</span></h2>
+      <div class="q" data-qid="w1p1">
+        <div class="qtext">Q1. <span data-en="You want to know the average height of all 1st-year students in Japan. 100% measurement of everyone is called...?" data-ja="日本の大学1年生全員の平均身長を知りたい。全員を測るのは？">日本の大学1年生全員の平均身長を知りたい。全員を測るのは？</span></div>
+        <div class="opts"></div>
+        <div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w1p2">
+        <div class="qtext">Q2. <span data-en="A researcher surveys 10 people leaving a gym at 6 AM. What's wrong with this sample?" data-ja="研究者が朝6時にジムから出る10人にアンケート。何が問題？">研究者が朝6時にジムから出る10人にアンケート。何が問題？</span></div>
+        <div class="opts"></div>
+        <div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w1p3">
+        <div class="qtext">Q3. <span data-en="In an RCT, why do we RANDOMLY assign groups?" data-ja="RCTでなぜ『ランダムに』グループ分けする？">RCTでなぜ『ランダムに』グループ分けする？</span></div>
+        <div class="opts"></div>
+        <div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w1p4">
+        <div class="qtext">Q4. <span data-en="One patient took medicine and got better. Can we conclude the medicine works?" data-ja="1人の患者が薬を飲んで治った。薬が効いたと結論できる？">1人の患者が薬を飲んで治った。薬が効いたと結論できる？</span></div>
+        <div class="opts"></div>
+        <div class="explain"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== WEEK 2 ========== -->
+  <section id="w2" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2>📗 <span data-en="Week 2 — Describing Data" data-ja="第2週 — データを概観する">第2週 — データを概観する</span></h2>
+      <span class="tag">度数分布表</span><span class="tag">ヒストグラム</span><span class="tag">四分位</span><span class="tag">中央値</span>
+
+      <h3>1. <span data-en="Why 'describe' data first?" data-ja="まず『概観』する理由">まず『概観』する理由</span></h3>
+      <div class="kid" data-en="Before you can solve a puzzle, you dump the pieces on the table and look at them. Week 2 is that 'look at it' step — we turn a pile of numbers into tables and pictures so we can SEE what's going on." data-ja="パズルを解く前に、ピースを机に広げて眺めますよね。第2週はその『眺める』工程。数字の山を表や絵にして、何が起きているかを目で見えるようにします。">パズルを解く前に、ピースを机に広げて眺めますよね。第2週はその『眺める』工程。数字の山を表や絵にして、何が起きているかを目で見えるようにします。</div>
+
+      <h3>2. <span data-en="Types of Data (変数の尺度)" data-ja="データの種類（尺度）">データの種類（尺度）</span></h3>
+      <div class="grid2">
+        <div class="mini"><strong>📛 <span data-en="Nominal (名義)" data-ja="名義尺度">名義尺度</span></strong><span data-en="Just labels. Blood type, favorite color. No order." data-ja="ただの区別。血液型、好きな色。順序なし。">ただの区別。血液型、好きな色。順序なし。</span></div>
+        <div class="mini"><strong>🥇 <span data-en="Ordinal (順序)" data-ja="順序尺度">順序尺度</span></strong><span data-en="Has order but gaps aren't equal. Movie rating ⭐⭐⭐⭐⭐." data-ja="順序あり、でも間隔は不明。映画の★評価。">順序あり、でも間隔は不明。映画の★評価。</span></div>
+        <div class="mini"><strong>🌡️ <span data-en="Interval (間隔)" data-ja="間隔尺度">間隔尺度</span></strong><span data-en="Equal gaps, no true zero. Celsius temperature." data-ja="間隔が等しいが、原点(0)に意味なし。摂氏温度。">間隔が等しいが、原点(0)に意味なし。摂氏温度。</span></div>
+        <div class="mini"><strong>📏 <span data-en="Ratio (比)" data-ja="比尺度">比尺度</span></strong><span data-en="Equal gaps AND true zero. Height, weight, count." data-ja="間隔等しい＋原点あり。身長、体重、個数。">間隔等しい＋原点あり。身長、体重、個数。</span></div>
+      </div>
+      <div class="tech" data-en="First two (nominal, ordinal) = 質的変数 (qualitative). Last two (interval, ratio) = 量的変数 (quantitative). The scale you have decides which statistics are meaningful — e.g., 'average blood type' is nonsense." data-ja="前2つ（名義・順序）＝質的変数。後2つ（間隔・比）＝量的変数。尺度が意味ある統計量を決めます。例：『平均血液型』はナンセンス。">前2つ（名義・順序）＝質的変数。後2つ（間隔・比）＝量的変数。尺度が意味ある統計量を決めます。例：『平均血液型』はナンセンス。</div>
+
+      <h3>3. <span data-en="Frequency Distribution Table (度数分布表)" data-ja="度数分布表">度数分布表</span></h3>
+      <p data-en="A table that counts how many data points fall into each 'bucket' (階級 / class)." data-ja="各『階級（バケツ）』にデータがいくつ入るかを数える表。">各『階級（バケツ）』にデータがいくつ入るかを数える表。</p>
+      <table>
+        <tr><th data-en="Class (階級)" data-ja="階級">階級</th><th data-en="Frequency (度数)" data-ja="度数">度数</th><th data-en="Relative freq (相対度数)" data-ja="相対度数">相対度数</th><th data-en="Cumulative (累積度数)" data-ja="累積度数">累積度数</th></tr>
+        <tr><td>1.5 ≤ x &lt; 1.6</td><td>3</td><td>0.10</td><td>3</td></tr>
+        <tr><td>1.6 ≤ x &lt; 1.7</td><td>12</td><td>0.40</td><td>15</td></tr>
+        <tr><td>1.7 ≤ x &lt; 1.8</td><td>10</td><td>0.33</td><td>25</td></tr>
+        <tr><td>1.8 ≤ x &lt; 1.9</td><td>5</td><td>0.17</td><td>30</td></tr>
+      </table>
+      <div class="warn" data-en="⚠️ '以上 (≥) and 未満 (<)' — 1.6 IS included, 1.7 is NOT included. This matters on exams!" data-ja="⚠️ 『以上・未満』— 1.6は含む、1.7は含まない。試験で超重要！">⚠️ 『以上・未満』— 1.6は含む、1.7は含まない。試験で超重要！</div>
+
+      <h3>4. <span data-en="Relative frequency, cumulative, percentile" data-ja="相対度数、累積、パーセンタイル">相対度数、累積、パーセンタイル</span></h3>
+      <div class="grid2">
+        <div class="mini"><strong data-en="Relative freq" data-ja="相対度数">相対度数</strong><span>= 度数 ÷ 全データ数. <span data-en="Sum of all = 1.00" data-ja="合計＝1.00">合計＝1.00</span></span></div>
+        <div class="mini"><strong data-en="Cumulative" data-ja="累積度数">累積度数</strong><span data-en="Running total, smallest to biggest class." data-ja="小さい階級から順に足していく。">小さい階級から順に足していく。</span></div>
+        <div class="mini"><strong data-en="Cumulative relative" data-ja="累積相対度数">累積相対度数</strong><span data-en="Running total of relative freqs. Tells you '% of data ≤ this value'." data-ja="相対度数の累積。『この値以下は全体の何％』が分かる。">相対度数の累積。『この値以下は全体の何％』が分かる。</span></div>
+        <div class="mini"><strong data-en="Percentile (パーセンタイル)" data-ja="パーセンタイル">パーセンタイル</strong><span>Excel: <code>=PERCENTILE.INC(range, 0.75)</code></span></div>
+      </div>
+
+      <h3>5. <span data-en="Quartiles (四分位) & Median (中央値)" data-ja="四分位と中央値">四分位と中央値</span></h3>
+      <p data-en="Sort the data smallest → biggest. Split into 4 equal chunks:" data-ja="データを小さい順に並べ、4等分します。">データを小さい順に並べ、4等分します。</p>
+      <ul>
+        <li><strong>Q1</strong> = 25% = <span data-en="1st quartile (第1四分位点)" data-ja="第1四分位点">第1四分位点</span></li>
+        <li><strong>Q2</strong> = 50% = <span data-en="Median (中央値)" data-ja="中央値">中央値</span> (= MEDIAN)</li>
+        <li><strong>Q3</strong> = 75% = <span data-en="3rd quartile (第3四分位点)" data-ja="第3四分位点">第3四分位点</span></li>
+      </ul>
+      <div class="tech">Excel: <code>=QUARTILE.INC(range, 1)</code>, <code>=QUARTILE.INC(range, 2)</code>, <code>=QUARTILE.INC(range, 3)</code></div>
+
+      <h3>6. <span data-en="Histograms & Sturges' Rule" data-ja="ヒストグラムとスタージェスの公式">ヒストグラムとスタージェスの公式</span></h3>
+      <p data-en="A histogram is a frequency table turned into bars. Bin count matters hugely!" data-ja="ヒストグラムは度数分布表を棒グラフにしたもの。階級数の選び方がめちゃくちゃ大事！">ヒストグラムは度数分布表を棒グラフにしたもの。階級数の選び方がめちゃくちゃ大事！</p>
+      <div class="tip">📐 <strong data-en="Sturges' Formula:" data-ja="スタージェスの公式：">スタージェスの公式：</strong> k = 1 + log₂(n). <span data-en="For n=100: k ≈ 1 + 6.64 ≈ 8 bins." data-ja="n=100なら k ≈ 1 + 6.64 ≈ 8階級。">n=100なら k ≈ 1 + 6.64 ≈ 8階級。</span></div>
+
+      <h3>7. <span data-en="Excel: how to make this" data-ja="Excel での作り方">Excel での作り方</span></h3>
+      <div class="mono">
+# <span data-en="Method 1: Analysis ToolPak → Histogram" data-ja="方法1：分析ツール → ヒストグラム">方法1：分析ツール → ヒストグラム</span>
+File → Options → Add-ins → Analysis ToolPak → OK
+Data tab → Data Analysis → Histogram
+Input range: your data    Bin range: your class upper bounds
+
+# <span data-en="Method 2: FREQUENCY function (array formula)" data-ja="方法2：FREQUENCY関数（配列数式）">方法2：FREQUENCY関数（配列数式）</span>
+1. Select output cells D2:D5
+2. Type =FREQUENCY(data_range, bin_range)
+3. Press F2, then Ctrl+Shift+Enter
+      </div>
+      <div class="warn" data-en="⚠️ Analysis ToolPak treats bin as '≤' (以下), not '<' (未満). To mimic '未満', enter 1.9999 instead of 2!" data-ja="⚠️ 分析ツールは『以下』で区切ります（『未満』ではない）。『未満』にしたければ 2 ではなく 1.9999 と入力！">⚠️ 分析ツールは『以下』で区切ります（『未満』ではない）。『未満』にしたければ 2 ではなく 1.9999 と入力！</div>
+    </div>
+
+    <!-- Practice Week 2 -->
+    <div class="card">
+      <h2>✏️ <span data-en="Practice — Week 2" data-ja="練習 — 第2週">練習 — 第2週</span></h2>
+      <div class="q" data-qid="w2p1">
+        <div class="qtext">Q1. <span data-en="Blood type (A, B, O, AB) is what scale?" data-ja="血液型（A・B・O・AB）の尺度は？">血液型（A・B・O・AB）の尺度は？</span></div>
+        <div class="opts"></div><div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w2p2">
+        <div class="qtext">Q2. <span data-en="You have n=64 data points. Sturges' rule gives about how many bins?" data-ja="n=64のとき、スタージェスの公式で階級数は？">n=64のとき、スタージェスの公式で階級数は？</span></div>
+        <div class="opts"></div><div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w2p3">
+        <div class="qtext">Q3. <span data-en="Sorted data: 2, 4, 6, 8, 10. What's the median?" data-ja="ソート済みデータ: 2, 4, 6, 8, 10。中央値は？">ソート済みデータ: 2, 4, 6, 8, 10。中央値は？</span></div>
+        <div class="opts"></div><div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w2p4">
+        <div class="qtext">Q4. <span data-en="Which Excel function returns the 25% percentile (Q1)?" data-ja="25%点（Q1）を返すExcel関数は？">25%点（Q1）を返すExcel関数は？</span></div>
+        <div class="opts"></div><div class="explain"></div>
+      </div>
+      <div class="q" data-qid="w2p5">
+        <div class="qtext">Q5. <span data-en="Class '3 ≤ x < 4' includes which values?" data-ja="階級『3以上4未満』に含まれるのは？">階級『3以上4未満』に含まれるのは？</span></div>
+        <div class="opts"></div><div class="explain"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== LAB ========== -->
+  <section id="lab" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2>🧪 <span data-en="Lab 1 — Random Sampling Simulator" data-ja="ラボ1 — ランダムサンプリング体験">ラボ1 — ランダムサンプリング体験</span></h2>
+      <p data-en="A population of 100 people (dots). Some are 'pink', some 'gray'. Try the two sampling methods and watch what happens!" data-ja="100人の『母集団』（ドット）。ピンクとグレーがいます。2つのサンプリング方法を試してみよう！">100人の『母集団』（ドット）。ピンクとグレーがいます。2つのサンプリング方法を試してみよう！</p>
+
+      <div class="sim">
+        <h4 data-en="Population (母集団) — pink:gray ratio" data-ja="母集団 — ピンク：グレー比率">母集団 — ピンク：グレー比率</h4>
+        <div class="dots" id="popDots"></div>
+        <p><span data-en="True pink ratio:" data-ja="本当のピンク率：">本当のピンク率：</span> <strong id="trueRatio">30%</strong></p>
+
+        <button class="btn" id="sampleRandom" data-en="🎲 Random Sample n=10" data-ja="🎲 ランダム抽出 n=10">🎲 ランダム抽出 n=10</button>
+        <button class="btn ghost" id="sampleBiased" data-en="📍 Biased (first 10)" data-ja="📍 偏った抽出（最初の10個）">📍 偏った抽出（最初の10個）</button>
+        <button class="btn ghost" id="resetPop" data-en="🔄 Reset" data-ja="🔄 リセット">🔄 リセット</button>
+
+        <div id="sampleResult" style="margin-top:14px"></div>
+      </div>
+      <div class="tip" data-en="💡 Run 'random' many times — the estimate jumps around but clusters near 30%. 'Biased' systematically lies." data-ja="💡 『ランダム』を何回も押してみて — 推定値は揺れるけど30%付近に集まる。『偏った』抽出は体系的にウソをつきます。">💡 『ランダム』を何回も押してみて — 推定値は揺れるけど30%付近に集まる。『偏った』抽出は体系的にウソをつきます。</div>
+    </div>
+
+    <div class="card">
+      <h2>🧪 <span data-en="Lab 2 — Live Histogram Builder" data-ja="ラボ2 — ヒストグラム作成体験">ラボ2 — ヒストグラム作成体験</span></h2>
+      <p data-en="Paste your own numbers or use the sample (student heights in cm). Pick bin count — see how the shape changes!" data-ja="自分の数字を貼り付けるか、サンプル（学生の身長cm）を使用。階級数を変えて形の変化を見よう！">自分の数字を貼り付けるか、サンプル（学生の身長cm）を使用。階級数を変えて形の変化を見よう！</p>
+
+      <div class="sim">
+        <label style="display:block;margin-bottom:6px;font-weight:700" data-en="Data (comma or space separated):" data-ja="データ（カンマまたはスペース区切り）：">データ（カンマまたはスペース区切り）：</label>
+        <textarea id="dataInput" style="width:100%;min-height:80px;padding:10px;border-radius:8px;border:2px solid #e2e8f0;font-family:monospace;font-size:13px">162 168 170 155 172 165 158 171 169 163 166 175 159 167 170 173 161 164 168 172 157 166 169 174 162 170 165 168 171 163 167 169 172 160 164 168 170 166 175 158</textarea>
+        <div style="margin-top:10px">
+          <label data-en="Bins:" data-ja="階級数：">階級数：</label>
+          <input type="range" id="binCount" min="3" max="15" value="6" style="width:200px;vertical-align:middle"/>
+          <span id="binLabel" style="font-weight:800;color:var(--accent)">6</span>
+          <button class="btn ghost" id="suggestBins" data-en="💡 Sturges suggests..." data-ja="💡 スタージェスの提案">💡 スタージェスの提案</button>
+        </div>
+        <button class="btn" id="buildHist" style="margin-top:10px" data-en="📊 Build Histogram" data-ja="📊 ヒストグラムを作成">📊 ヒストグラムを作成</button>
+
+        <div id="histArea" style="margin-top:16px"></div>
+        <div id="statsArea" class="grid2" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧪 <span data-en="Lab 3 — Quartile Playground" data-ja="ラボ3 — 四分位プレイグラウンド">ラボ3 — 四分位プレイグラウンド</span></h2>
+      <p data-en="Type numbers, get Q1, Q2 (median), Q3 instantly. Great exam practice!" data-ja="数字を入れると Q1、Q2（中央値）、Q3 を即計算。試験対策に最高！">数字を入れると Q1、Q2（中央値）、Q3 を即計算。試験対策に最高！</p>
+      <div class="sim">
+        <input id="qInput" type="text" placeholder="e.g. 3, 7, 1, 9, 5, 2, 8, 4, 6" style="width:100%;padding:10px;border-radius:8px;border:2px solid #e2e8f0;font-size:14px" value="3,7,1,9,5,2,8,4,6,10"/>
+        <button class="btn" id="qGo" style="margin-top:10px" data-en="🎯 Compute" data-ja="🎯 計算">🎯 計算</button>
+        <div id="qOut" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== BOSS QUIZ ========== -->
+  <section id="quiz" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2>🎯 <span data-en="Boss Quiz — 10 Questions" data-ja="ボスクイズ — 全10問">ボスクイズ — 全10問</span></h2>
+      <p data-en="Mix of Week 1 and Week 2. Score 8+ to unlock the ⭐ Data Explorer badge!" data-ja="第1週＆第2週ミックス。8問以上で⭐データ探検家バッジ解禁！">第1週＆第2週ミックス。8問以上で⭐データ探検家バッジ解禁！</p>
+      <div id="bossQuizArea"></div>
+      <button class="btn" id="bossSubmit" style="margin-top:14px;display:none" data-en="🏁 Submit & See Score" data-ja="🏁 採点する">🏁 採点する</button>
+      <div id="bossResult" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ========== CHEAT ========== -->
+  <section id="cheat" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2>📝 <span data-en="Cheat Sheet (Print-friendly)" data-ja="チートシート（印刷向き）">チートシート（印刷向き）</span></h2>
+
+      <h3 data-en="Week 1 Key Terms" data-ja="第1週キーワード">第1週キーワード</h3>
+      <table>
+        <tr><th data-en="JP" data-ja="日本語">日本語</th><th data-en="EN" data-ja="英語">英語</th><th data-en="One-liner" data-ja="一言で">一言で</th></tr>
+        <tr><td>母集団</td><td>Population</td><td data-en="everyone you care about" data-ja="興味のある全員">興味のある全員</td></tr>
+        <tr><td>標本</td><td>Sample</td><td data-en="the subset you measured" data-ja="実際に測った一部">実際に測った一部</td></tr>
+        <tr><td>全数調査</td><td>Census</td><td data-en="measure 100%" data-ja="100%測る">100%測る</td></tr>
+        <tr><td>ランダムサンプリング</td><td>Random sampling</td><td data-en="pick with NO rule" data-ja="ルールなしで選ぶ">ルールなしで選ぶ</td></tr>
+        <tr><td>ランダム化比較研究</td><td>RCT</td><td data-en="gold-standard causal study" data-ja="因果研究の金字塔">因果研究の金字塔</td></tr>
+        <tr><td>因果関係</td><td>Causal relationship</td><td data-en="X causes Y (proven)" data-ja="XがYを起こす（証明済）">XがYを起こす（証明済）</td></tr>
+      </table>
+
+      <h3 data-en="Week 2 Formulas" data-ja="第2週の公式">第2週の公式</h3>
+      <div class="mono">
+# <span data-en="Relative frequency" data-ja="相対度数">相対度数</span>
+f_rel = frequency / total_n
+
+# <span data-en="Sturges — number of bins" data-ja="スタージェス — 階級数">スタージェス — 階級数</span>
+k = 1 + log2(n)
+
+# Excel
+=FREQUENCY(data, bins)        (<span data-en="array formula: Ctrl+Shift+Enter" data-ja="配列数式：Ctrl+Shift+Enter">配列数式：Ctrl+Shift+Enter</span>)
+=MEDIAN(range)
+=QUARTILE.INC(range, 1|2|3)
+=PERCENTILE.INC(range, 0.25)
+      </div>
+
+      <h3 data-en="Data Scales Quick Decide" data-ja="尺度の見分け方">尺度の見分け方</h3>
+      <table>
+        <tr><th data-en="Ask yourself" data-ja="自問">自問</th><th data-en="If YES →" data-ja="YESなら→">YESなら→</th></tr>
+        <tr><td data-en="Just a label?" data-ja="ただのラベル？">ただのラベル？</td><td>Nominal (名義)</td></tr>
+        <tr><td data-en="Has order, gaps unclear?" data-ja="順序あり、間隔は不明？">順序あり、間隔は不明？</td><td>Ordinal (順序)</td></tr>
+        <tr><td data-en="Equal gaps, zero arbitrary?" data-ja="間隔等しい、0が便宜的？">間隔等しい、0が便宜的？</td><td>Interval (間隔)</td></tr>
+        <tr><td data-en="Equal gaps, true zero?" data-ja="間隔等しい、真の0あり？">間隔等しい、真の0あり？</td><td>Ratio (比)</td></tr>
+      </table>
+
+      <h3 data-en="Exam Traps ⚠️" data-ja="試験のワナ ⚠️">試験のワナ ⚠️</h3>
+      <ul style="line-height:1.9">
+        <li data-en="'以上' includes the number; '未満' does NOT." data-ja="『以上』は含む、『未満』は含まない。">『以上』は含む、『未満』は含まない。</li>
+        <li data-en="Analysis ToolPak Histogram uses '≤' — convert by subtracting ε." data-ja="分析ツールの『ヒストグラム』は『≤』。εを引いて『&lt;』に変換。">分析ツールの『ヒストグラム』は『≤』。εを引いて『&lt;』に変換。</li>
+        <li data-en="FREQUENCY is an array function — Ctrl+Shift+Enter." data-ja="FREQUENCY関数は配列 — Ctrl+Shift+Enter。">FREQUENCY関数は配列 — Ctrl+Shift+Enter。</li>
+        <li data-en="Median = Q2 = 2nd quartile = 50th percentile." data-ja="中央値 = Q2 = 第2四分位 = 50パーセンタイル。">中央値 = Q2 = 第2四分位 = 50パーセンタイル。</li>
+        <li data-en="Random sampling ≠ biased but convenient sampling (morning patients, volunteers...)." data-ja="ランダム ≠ 都合のいいサンプリング（朝の患者、ボランティアなど）。">ランダム ≠ 都合のいいサンプリング（朝の患者、ボランティアなど）。</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<div class="celebrate" id="cel">🎉 <span id="celText">+10 XP!</span></div>
+
+<script>
+/* ========== DATA ========== */
+const QUIZZES = {
+  w1p1: {
+    q: {ja:"日本の大学1年生全員の平均身長を知りたい。全員を測るのは？", en:"You want the average height of all Japanese 1st-year university students. Measuring everyone is called?"},
+    opts:[
+      {ja:"標本調査", en:"Sample survey"},
+      {ja:"全数調査", en:"Census / full survey", correct:true},
+      {ja:"ランダム化比較研究", en:"RCT"},
+      {ja:"度数分布", en:"Frequency distribution"}
+    ],
+    exp:{ja:"全員を測るのが全数調査（例：国勢調査）。一部だけなら標本調査。", en:"Measuring the WHOLE population = census (全数調査). Measuring a subset = sample survey."}
+  },
+  w1p2: {
+    q:{ja:"研究者が朝6時にジムから出る10人にアンケート。何が問題？", en:"A researcher surveys 10 people leaving a gym at 6 AM. What's wrong?"},
+    opts:[
+      {ja:"サンプルサイズが小さい", en:"Sample is too small"},
+      {ja:"偏り（バイアス）がある — 運動習慣のある人に偏る", en:"Biased — skews toward fitness-oriented people", correct:true},
+      {ja:"統計的に問題なし", en:"Nothing wrong"},
+      {ja:"全数調査にすべき", en:"Should be a census"}
+    ],
+    exp:{ja:"時間帯・場所というルールが『運動好き』という隠れ属性と強く関係 → バイアス。ランダムでないサンプリングの典型失敗例。", en:"The place+time rule correlates with the hidden trait 'fitness-oriented' → bias. Classic failure of non-random sampling."}
+  },
+  w1p3: {
+    q:{ja:"RCTでなぜ『ランダムに』グループ分けする？", en:"Why do RCTs assign groups RANDOMLY?"},
+    opts:[
+      {ja:"計算を楽にするため", en:"To make math easier"},
+      {ja:"グループ間で隠れた要因がそろうようにするため", en:"To balance hidden factors across groups", correct:true},
+      {ja:"法律で決まっているから", en:"It's legally required"},
+      {ja:"サンプル数を増やすため", en:"To increase sample size"}
+    ],
+    exp:{ja:"ランダムに割り当てると、年齢・生活習慣などの隠れ要因が両群でほぼ同じに揃い、結果の差を『介入の効果』と解釈できます。", en:"Random assignment balances hidden factors (age, lifestyle...) across groups, so outcome differences can be attributed to the intervention."}
+  },
+  w1p4: {
+    q:{ja:"1人の患者が薬を飲んで治った。薬が効いたと結論できる？", en:"One patient took medicine and got better. Can we conclude the medicine works?"},
+    opts:[
+      {ja:"はい、効いた", en:"Yes, it worked"},
+      {ja:"いいえ。同じ人を『飲んだ場合』『飲まなかった場合』両方観察できないから", en:"No — we can't observe the same person both treated AND untreated", correct:true},
+      {ja:"サンプルが多ければOK", en:"OK if sample is large"},
+      {ja:"調査不要", en:"No investigation needed"}
+    ],
+    exp:{ja:"1人では『治療あり／なし』の同時観察不可能。だから集団＋ランダム化が必要。", en:"A single person can't be simultaneously treated and untreated. That's why we need groups + randomization."}
+  },
+  w2p1: {
+    q:{ja:"血液型（A・B・O・AB）の尺度は？", en:"Blood type (A, B, O, AB) — what scale?"},
+    opts:[
+      {ja:"名義尺度", en:"Nominal", correct:true},
+      {ja:"順序尺度", en:"Ordinal"},
+      {ja:"間隔尺度", en:"Interval"},
+      {ja:"比尺度", en:"Ratio"}
+    ],
+    exp:{ja:"区別のみ、順序なし → 名義尺度。『平均血液型』は意味なし。", en:"Just distinct labels, no order → nominal. 'Average blood type' is meaningless."}
+  },
+  w2p2: {
+    q:{ja:"n=64のとき、スタージェスの公式で階級数は？", en:"n=64, Sturges' rule gives how many bins?"},
+    opts:[
+      {ja:"約 4", en:"about 4"},
+      {ja:"約 7", en:"about 7", correct:true},
+      {ja:"約 10", en:"about 10"},
+      {ja:"約 16", en:"about 16"}
+    ],
+    exp:{ja:"k = 1 + log₂(64) = 1 + 6 = 7。", en:"k = 1 + log₂(64) = 1 + 6 = 7."}
+  },
+  w2p3: {
+    q:{ja:"ソート済みデータ: 2, 4, 6, 8, 10。中央値は？", en:"Sorted: 2, 4, 6, 8, 10. Median?"},
+    opts:[
+      {ja:"4", en:"4"},
+      {ja:"5", en:"5"},
+      {ja:"6", en:"6", correct:true},
+      {ja:"8", en:"8"}
+    ],
+    exp:{ja:"奇数個（5個）なので真ん中の3番目 = 6。", en:"Odd count (5) → middle (3rd) value = 6."}
+  },
+  w2p4: {
+    q:{ja:"25%点（Q1）を返すExcel関数は？", en:"Which Excel function returns Q1 (25th percentile)?"},
+    opts:[
+      {ja:"=MEDIAN(A1:A10)", en:"=MEDIAN(A1:A10)"},
+      {ja:"=QUARTILE.INC(A1:A10, 1)", en:"=QUARTILE.INC(A1:A10, 1)", correct:true},
+      {ja:"=QUARTILE.INC(A1:A10, 2)", en:"=QUARTILE.INC(A1:A10, 2)"},
+      {ja:"=FREQUENCY(A1:A10, B1:B5)", en:"=FREQUENCY(A1:A10, B1:B5)"}
+    ],
+    exp:{ja:"第1四分位 = QUARTILE.INC(range, 1)。2ならQ2（中央値）、3ならQ3。", en:"Q1 = QUARTILE.INC(range, 1). 2 = Q2 (median), 3 = Q3."}
+  },
+  w2p5: {
+    q:{ja:"階級『3以上4未満』に含まれるのは？", en:"Class '3 ≤ x < 4' includes which values?"},
+    opts:[
+      {ja:"2.9, 3, 3.5", en:"2.9, 3, 3.5"},
+      {ja:"3, 3.5, 3.99 (4は含まない)", en:"3, 3.5, 3.99 (NOT 4)", correct:true},
+      {ja:"3, 3.5, 4", en:"3, 3.5, 4"},
+      {ja:"3.5, 4, 4.5", en:"3.5, 4, 4.5"}
+    ],
+    exp:{ja:"『以上』→3は含む。『未満』→4は含まない。超頻出の引っ掛け！", en:"'以上' INCLUDES 3. '未満' EXCLUDES 4. Very common exam trap!"}
+  },
+  b1: {
+    q:{ja:"統計的因果推論で集団を使う根本理由は？", en:"Fundamental reason we use groups for causal inference?"},
+    opts:[
+      {ja:"個人の『治療あり』と『治療なし』を同時に観察できないから", en:"Can't observe treated & untreated for the same individual simultaneously", correct:true},
+      {ja:"個人の情報は違法だから", en:"Individual data is illegal"},
+      {ja:"集団の方が安いから", en:"Groups are cheaper"},
+      {ja:"平均が好きだから", en:"We just like averages"}
+    ],
+    exp:{ja:"因果推論の根本課題：反事実（counterfactual）は観察不可能。集団＋ランダム化でその代わりをする。", en:"Fundamental problem: counterfactuals are unobservable. Groups + randomization stand in."}
+  },
+  b2: {
+    q:{ja:"ランダムサンプリングで偏りが生じたら？", en:"If random sampling produces a biased sample by chance?"},
+    opts:[
+      {ja:"大問題、使えない", en:"Huge problem, unusable"},
+      {ja:"統計的推測で誤差として考慮されるのでOK", en:"It's treated as error and accounted for in statistical inference — OK", correct:true},
+      {ja:"サンプルを捨てる", en:"Discard the sample"},
+      {ja:"全数調査にする", en:"Switch to census"}
+    ],
+    exp:{ja:"偶然の偏りは『誤差』として確率論に織り込み済み。ランダムでない偏り（系統的バイアス）こそ致命傷。", en:"Chance bias is built into probability theory as 'error'. Non-random (systematic) bias is the real killer."}
+  },
+  b3: {
+    q:{ja:"量的変数はどれ？", en:"Which are quantitative variables?"},
+    opts:[
+      {ja:"間隔尺度・比尺度", en:"Interval & Ratio", correct:true},
+      {ja:"名義尺度・順序尺度", en:"Nominal & Ordinal"},
+      {ja:"全部", en:"All four"},
+      {ja:"名義尺度だけ", en:"Nominal only"}
+    ],
+    exp:{ja:"質的＝名義・順序／量的＝間隔・比。", en:"Qualitative = nominal, ordinal. Quantitative = interval, ratio."}
+  },
+  b4: {
+    q:{ja:"スタージェスの公式 k = 1 + log₂n で n=1000 のとき k は？", en:"Sturges k = 1 + log₂n. For n=1000, k ≈?"},
+    opts:[
+      {ja:"約 5", en:"about 5"},
+      {ja:"約 8", en:"about 8"},
+      {ja:"約 11", en:"about 11", correct:true},
+      {ja:"約 20", en:"about 20"}
+    ],
+    exp:{ja:"log₂1000 ≈ 9.97 → k ≈ 10.97 ≈ 11。", en:"log₂1000 ≈ 9.97 → k ≈ 10.97 ≈ 11."}
+  },
+  b5: {
+    q:{ja:"FREQUENCY関数使用時の正しい手順は？", en:"Correct procedure for FREQUENCY function?"},
+    opts:[
+      {ja:"Enterを押すだけ", en:"Just press Enter"},
+      {ja:"出力セル範囲を選択 → 式入力 → F2 → Ctrl+Shift+Enter", en:"Select output range → type formula → F2 → Ctrl+Shift+Enter", correct:true},
+      {ja:"マクロが必要", en:"Need a macro"},
+      {ja:"PERCENTILEを先に実行", en:"Run PERCENTILE first"}
+    ],
+    exp:{ja:"配列数式なので、範囲選択→Ctrl+Shift+Enterが必須（新しい版のExcelなら自動的に動的配列になることも）。", en:"It's an array formula — select output range, press Ctrl+Shift+Enter. Modern Excel may do dynamic arrays automatically."}
+  },
+  b6: {
+    q:{ja:"累積相対度数の合計は必ず？", en:"The cumulative relative frequency of the LAST class equals?"},
+    opts:[
+      {ja:"1 (100%)", en:"1 (100%)", correct:true},
+      {ja:"0", en:"0"},
+      {ja:"データ数に等しい", en:"= total n"},
+      {ja:"決まっていない", en:"Varies"}
+    ],
+    exp:{ja:"相対度数は全部足すと1。累積相対度数の最後の値は必ず1。", en:"Relative freqs sum to 1, so the final cumulative relative freq is 1."}
+  },
+  b7: {
+    q:{ja:"『1人のおじいさんが毎日タバコを吸って90歳まで生きた → タバコは安全』これは？", en:"'My grandpa smoked daily and lived to 90, so smoking is safe'. This is...?"},
+    opts:[
+      {ja:"正しい因果推論", en:"Valid causal inference"},
+      {ja:"個人事例から集団の結論を出す誤り", en:"Invalid — single case can't prove group-level conclusion", correct:true},
+      {ja:"RCTの一種", en:"A type of RCT"},
+      {ja:"母集団の定義", en:"Definition of population"}
+    ],
+    exp:{ja:"第1週の核心：個人事例から集団への一般化は因果証明にならない。", en:"Week 1 core lesson: a single anecdote cannot establish a group-level causal claim."}
+  },
+  b8: {
+    q:{ja:"中央値 = ?", en:"Median equals?"},
+    opts:[
+      {ja:"Q1", en:"Q1"},
+      {ja:"Q2 = 50%点", en:"Q2 = 50th percentile", correct:true},
+      {ja:"Q3", en:"Q3"},
+      {ja:"最頻値", en:"Mode"}
+    ],
+    exp:{ja:"中央値 = Q2 = 50パーセンタイル。=MEDIAN() = =QUARTILE.INC(range,2) = =PERCENTILE.INC(range,0.5)。", en:"Median = Q2 = 50th percentile. MEDIAN() = QUARTILE.INC(range,2) = PERCENTILE.INC(range,0.5)."}
+  },
+  b9: {
+    q:{ja:"『分析ツール』のヒストグラムで『未満』を実現するには？", en:"To simulate '未満' (<) in Analysis ToolPak Histogram, you should:"},
+    opts:[
+      {ja:"そのまま入れる", en:"Just enter the value as-is"},
+      {ja:"値から極小値を引く（例：2 → 1.9999）", en:"Subtract a tiny value (e.g., 2 → 1.9999)", correct:true},
+      {ja:"VBAで補正", en:"Fix it with VBA"},
+      {ja:"できない", en:"Impossible"}
+    ],
+    exp:{ja:"分析ツールは『以下』で境界処理するため、境界値からεを引いて『未満』を模擬。", en:"Analysis ToolPak treats bins as '≤'. Subtract ε to approximate '<'."}
+  },
+  b10: {
+    q:{ja:"母集団1000人から標本30人をランダム抽出。主な目的は？", en:"Random sample of 30 from a population of 1000. Main purpose?"},
+    opts:[
+      {ja:"時間をつぶす", en:"Kill time"},
+      {ja:"標本から母集団全体の性質を推測する", en:"Use the sample to infer properties of the whole population", correct:true},
+      {ja:"全員を記述する", en:"Describe all 1000"},
+      {ja:"個別の因果関係を見る", en:"Study individual causation"}
+    ],
+    exp:{ja:"標本調査の目的：母集団を推測すること。ランダム＝推測の信頼性の土台。", en:"Purpose of sample surveys: infer about the population. Randomness = foundation of inferential reliability."}
+  }
+};
+
+/* ========== STATE ========== */
+let lang = 'ja';
+let xp = 0;
+let answered = new Set();
+const totalItems = Object.keys(QUIZZES).length;
+
+/* ========== LANG ========== */
+function applyLang(){
+  document.querySelectorAll('[data-ja]').forEach(el=>{
+    const v = el.getAttribute('data-'+lang);
+    if(v!==null) el.textContent = v;
+  });
+  document.getElementById('btnJa').classList.toggle('on', lang==='ja');
+  document.getElementById('btnEn').classList.toggle('on', lang==='en');
+  // re-render dynamic quizzes
+  renderInlineQuizzes();
+  renderBossQuiz();
+}
+document.getElementById('btnJa').onclick=()=>{lang='ja';applyLang()};
+document.getElementById('btnEn').onclick=()=>{lang='en';applyLang()};
+
+/* ========== TABS ========== */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
+    document.getElementById(btn.dataset.tab).style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+});
+
+/* ========== XP / PROGRESS ========== */
+function celebrate(text){
+  const c = document.getElementById('cel');
+  document.getElementById('celText').textContent = text;
+  c.classList.add('show');
+  setTimeout(()=>c.classList.remove('show'), 1800);
+}
+function addXP(n, msg){
+  xp += n;
+  document.getElementById('xp').textContent = xp;
+  const pct = Math.min(100, (answered.size/totalItems)*100);
+  document.getElementById('prog').style.width = pct + '%';
+  if(msg) celebrate(msg);
+}
+
+/* ========== INLINE QUIZZES (W1 & W2) ========== */
+function renderInlineQuizzes(){
+  document.querySelectorAll('.q[data-qid]').forEach(qEl=>{
+    const id = qEl.dataset.qid;
+    const data = QUIZZES[id];
+    if(!data) return;
+    const optsDiv = qEl.querySelector('.opts');
+    const expDiv = qEl.querySelector('.explain');
+    optsDiv.innerHTML = '';
+    expDiv.classList.remove('show');
+    expDiv.textContent = '';
+
+    data.opts.forEach((o,i)=>{
+      const b = document.createElement('div');
+      b.className = 'opt';
+      b.textContent = o[lang];
+      b.onclick = ()=>{
+        if(qEl.classList.contains('done')) return;
+        qEl.classList.add('done');
+        optsDiv.querySelectorAll('.opt').forEach(x=>x.classList.add('disabled'));
+        if(o.correct){
+          b.classList.add('correct');
+          if(!answered.has(id)){ answered.add(id); addXP(10, '+10 XP! 🌟'); }
+        } else {
+          b.classList.add('wrong');
+          // also mark the correct one
+          data.opts.forEach((oo,j)=>{
+            if(oo.correct) optsDiv.children[j].classList.add('correct');
+          });
+          if(!answered.has(id)){ answered.add(id); addXP(3, '+3 XP (try again!)'); }
+        }
+        expDiv.textContent = data.exp[lang];
+        expDiv.classList.add('show');
+      };
+      optsDiv.appendChild(b);
+    });
+  });
+}
+
+/* ========== BOSS QUIZ ========== */
+const bossIds = ['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10'];
+let bossAnswers = {};
+function renderBossQuiz(){
+  const area = document.getElementById('bossQuizArea');
+  area.innerHTML = '';
+  bossIds.forEach((id, idx)=>{
+    const data = QUIZZES[id];
+    const div = document.createElement('div');
+    div.className='q';
+    div.dataset.qid=id;
+    div.innerHTML = `<div class="qtext">Q${idx+1}. ${data.q[lang]}</div><div class="opts"></div><div class="explain"></div>`;
+    const optsDiv = div.querySelector('.opts');
+    data.opts.forEach((o,i)=>{
+      const b = document.createElement('div');
+      b.className='opt';
+      b.textContent = o[lang];
+      b.onclick=()=>{
+        optsDiv.querySelectorAll('.opt').forEach(x=>x.classList.remove('correct','wrong'));
+        b.classList.add('correct');
+        bossAnswers[id] = i;
+        document.getElementById('bossSubmit').style.display='inline-block';
+      };
+      if(bossAnswers[id]===i) b.classList.add('correct');
+      optsDiv.appendChild(b);
+    });
+    area.appendChild(div);
+  });
+}
+document.getElementById('bossSubmit').onclick = ()=>{
+  let score = 0;
+  bossIds.forEach(id=>{
+    const data = QUIZZES[id];
+    const picked = bossAnswers[id];
+    const qEl = document.querySelector(`#bossQuizArea .q[data-qid="${id}"]`);
+    const opts = qEl.querySelectorAll('.opt');
+    opts.forEach((o,i)=>{
+      o.classList.remove('correct','wrong');
+      o.classList.add('disabled');
+      if(data.opts[i].correct) o.classList.add('correct');
+      else if(i===picked) o.classList.add('wrong');
+    });
+    const exp = qEl.querySelector('.explain');
+    exp.textContent = data.exp[lang];
+    exp.classList.add('show');
+    if(picked!==undefined && data.opts[picked].correct) score++;
+  });
+  const res = document.getElementById('bossResult');
+  const badge = score>=8
+    ? (lang==='ja' ? `🏆 ⭐ データ探検家バッジ獲得！ ${score}/10点、すばらしい！` : `🏆 ⭐ Data Explorer badge earned! ${score}/10 — awesome!`)
+    : (lang==='ja' ? `📘 スコア: ${score}/10。もう少し！復習して再挑戦しよう。` : `📘 Score: ${score}/10. Keep going — review and try again!`);
+  res.innerHTML = `<div class="flash ${score>=8?'ok':'no'} show">${badge}</div>`;
+  addXP(score*5, lang==='ja' ? `+${score*5} XP!` : `+${score*5} XP!`);
+};
+
+/* ========== LAB 1: SAMPLING ========== */
+const POP_SIZE = 100;
+let pop = [];
+function buildPop(){
+  pop = [];
+  const trueRatio = 0.3;
+  for(let i=0;i<POP_SIZE;i++) pop.push(Math.random()<trueRatio ? 1 : 0);
+  const el = document.getElementById('popDots');
+  el.innerHTML='';
+  pop.forEach((v,i)=>{
+    const d = document.createElement('div');
+    d.className='dot';
+    if(v===1) d.style.background='#f9a8d4';
+    d.dataset.i=i;
+    el.appendChild(d);
+  });
+  document.getElementById('trueRatio').textContent = (pop.reduce((a,b)=>a+b,0)) + '%';
+  document.getElementById('sampleResult').innerHTML='';
+}
+function showSample(indices, label){
+  document.querySelectorAll('#popDots .dot').forEach(d=>{
+    d.classList.remove('picked','biased');
+  });
+  const pinks = indices.filter(i=>pop[i]===1).length;
+  indices.forEach(i=>{
+    const el = document.querySelector(`#popDots .dot[data-i="${i}"]`);
+    if(el) el.classList.add(label==='biased'?'biased':'picked');
+  });
+  const ratio = ((pinks/indices.length)*100).toFixed(0);
+  const trueR = pop.reduce((a,b)=>a+b,0);
+  const diff = Math.abs(ratio - trueR);
+  const judgeJa = label==='biased'
+    ? '⚠️ 偏った抽出。母集団の推定として信頼できません。'
+    : (diff<=10 ? '✅ ランダム抽出。母集団に近い推定！' : '🎲 ランダム抽出。偶然の揺れあり、でも不偏。');
+  const judgeEn = label==='biased'
+    ? '⚠️ Biased sample — unreliable as a population estimate.'
+    : (diff<=10 ? '✅ Random sample — close to population!' : '🎲 Random sample — chance variation, but unbiased.');
+  document.getElementById('sampleResult').innerHTML =
+    `<div class="mini"><strong>${lang==='ja'?'標本n=10の結果':'Sample n=10 result'}</strong>
+     ${lang==='ja'?'ピンク率':'Pink ratio'}: <b>${ratio}%</b> (${lang==='ja'?'本当は':'true'}: ${trueR}%)<br>
+     <span style="font-size:13px">${lang==='ja'?judgeJa:judgeEn}</span></div>`;
+}
+document.getElementById('sampleRandom').onclick = ()=>{
+  const idx = [];
+  while(idx.length<10){
+    const r = Math.floor(Math.random()*POP_SIZE);
+    if(!idx.includes(r)) idx.push(r);
+  }
+  showSample(idx, 'random');
+  if(!answered.has('lab1')){ answered.add('lab1'); addXP(5,'+5 XP! 🧪'); }
+};
+document.getElementById('sampleBiased').onclick = ()=>{
+  showSample([0,1,2,3,4,5,6,7,8,9], 'biased');
+};
+document.getElementById('resetPop').onclick = buildPop;
+buildPop();
+
+/* ========== LAB 2: HISTOGRAM ========== */
+document.getElementById('binCount').oninput = e=>{
+  document.getElementById('binLabel').textContent = e.target.value;
+};
+function parseNums(s){
+  return s.split(/[\s,]+/).map(Number).filter(n=>!isNaN(n));
+}
+function buildHist(){
+  const data = parseNums(document.getElementById('dataInput').value);
+  if(data.length<3){ alert(lang==='ja'?'データをもう少し入れて':'Need more data'); return; }
+  const bins = parseInt(document.getElementById('binCount').value);
+  const min = Math.min(...data), max = Math.max(...data);
+  const width = (max-min)/bins;
+  const counts = new Array(bins).fill(0);
+  const labels = [];
+  for(let i=0;i<bins;i++){
+    const lo=min+i*width, hi=min+(i+1)*width;
+    labels.push(`${lo.toFixed(1)}-${hi.toFixed(1)}`);
+  }
+  data.forEach(v=>{
+    let idx = Math.floor((v-min)/width);
+    if(idx>=bins) idx = bins-1;
+    counts[idx]++;
+  });
+  const maxC = Math.max(...counts);
+  const html = `<div class="hist">${counts.map((c,i)=>
+    `<div class="bar" style="height:${(c/maxC)*100}%"><span>${c}</span><small>${labels[i]}</small></div>`
+  ).join('')}</div>`;
+  document.getElementById('histArea').innerHTML = html + `<p style="font-size:13px;color:#64748b;margin-top:24px">${lang==='ja'?'※ バーの上＝度数、下＝階級':'Top of bar = frequency, bottom = class'}</p>`;
+
+  // stats
+  const sorted = [...data].sort((a,b)=>a-b);
+  const n = sorted.length;
+  const mean = (data.reduce((a,b)=>a+b,0)/n).toFixed(2);
+  const median = n%2 ? sorted[(n-1)/2] : ((sorted[n/2-1]+sorted[n/2])/2).toFixed(2);
+  const q = p=>{
+    const pos=(n-1)*p, b=Math.floor(pos), r=pos-b;
+    const next = sorted[b+1]!==undefined ? sorted[b+1] : sorted[b];
+    return (sorted[b]+(next-sorted[b])*r).toFixed(2);
+  };
+  document.getElementById('statsArea').innerHTML = `
+    <div class="mini"><strong>n</strong>${n}</div>
+    <div class="mini"><strong>min</strong>${min}</div>
+    <div class="mini"><strong>max</strong>${max}</div>
+    <div class="mini"><strong>${lang==='ja'?'平均':'mean'}</strong>${mean}</div>
+    <div class="mini"><strong>${lang==='ja'?'中央値 Q2':'median Q2'}</strong>${median}</div>
+    <div class="mini"><strong>Q1 (25%)</strong>${q(0.25)}</div>
+    <div class="mini"><strong>Q3 (75%)</strong>${q(0.75)}</div>
+    <div class="mini"><strong>${lang==='ja'?'Sturges推奨':'Sturges suggest'}</strong>${Math.ceil(1+Math.log2(n))}</div>
+  `;
+  if(!answered.has('lab2')){ answered.add('lab2'); addXP(5,'+5 XP! 📊'); }
+}
+document.getElementById('buildHist').onclick = buildHist;
+document.getElementById('suggestBins').onclick = ()=>{
+  const data = parseNums(document.getElementById('dataInput').value);
+  if(data.length<1) return;
+  const k = Math.ceil(1+Math.log2(data.length));
+  document.getElementById('binCount').value = Math.min(15, Math.max(3,k));
+  document.getElementById('binLabel').textContent = document.getElementById('binCount').value;
+  buildHist();
+};
+
+/* ========== LAB 3: QUARTILES ========== */
+document.getElementById('qGo').onclick = ()=>{
+  const data = parseNums(document.getElementById('qInput').value);
+  if(data.length<4){ alert(lang==='ja'?'4個以上必要':'Need 4+ numbers'); return; }
+  const sorted=[...data].sort((a,b)=>a-b);
+  const n=sorted.length;
+  const q=p=>{
+    const pos=(n-1)*p, b=Math.floor(pos), r=pos-b;
+    const next = sorted[b+1]!==undefined?sorted[b+1]:sorted[b];
+    return (sorted[b]+(next-sorted[b])*r);
+  };
+  document.getElementById('qOut').innerHTML = `
+    <div class="mini"><strong>${lang==='ja'?'ソート済み':'Sorted'}</strong>${sorted.join(', ')}</div>
+    <div class="grid2" style="margin-top:8px">
+      <div class="mini"><strong>min</strong>${sorted[0]}</div>
+      <div class="mini"><strong>Q1 (25%)</strong>${q(0.25).toFixed(2)}</div>
+      <div class="mini"><strong>${lang==='ja'?'中央値 Q2':'Median Q2'} (50%)</strong>${q(0.5).toFixed(2)}</div>
+      <div class="mini"><strong>Q3 (75%)</strong>${q(0.75).toFixed(2)}</div>
+      <div class="mini"><strong>max</strong>${sorted[n-1]}</div>
+    </div>
+    <p style="font-size:13px;color:#64748b;margin-top:10px">${lang==='ja'?'Excel式: =QUARTILE.INC(range, 1/2/3)':'Excel: =QUARTILE.INC(range, 1/2/3)'}</p>
+  `;
+  if(!answered.has('lab3')){ answered.add('lab3'); addXP(5,'+5 XP! 🎯'); }
+};
+
+/* ========== INIT ========== */
+renderInlineQuizzes();
+renderBossQuiz();
+applyLang();
+</script>
+</body>
+</html>
